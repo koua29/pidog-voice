@@ -1,0 +1,412 @@
+{
+  "_lisezmoi": [
+    "SOURCE DE VERITE UNIQUE du projet pidog-voice.",
+    "Ce fichier alimente les TROIS etages a la fois :",
+    "  1. le biais de vocabulaire de Whisper  <- champ 'phrases'",
+    "  2. le prompt du LLM (catalogue + few-shot) <- champs 'intention' et 'exemples'",
+    "  3. l'execution des mouvements <- champ 'sequence'",
+    "Ajouter une commande = ajouter un bloc ici. Aucun code a modifier.",
+    "Verifier ensuite avec : python3 outils/verifier_config.py"
+  ],
+  "reglages": {
+    "mot_reveil": [
+      "pidog",
+      "pi dog",
+      "pidogue",
+      "py dog",
+      "bidog",
+      "pidoc",
+      "pidock"
+    ],
+    "fenetre_conversation_s": 12.0,
+    "prefixe_biais": "Ordres au robot chien PiDog. "
+  },
+  "commandes": {
+    "demo": {
+      "intention": "jouer le spectacle complet, montrer tout son repertoire, faire son numero",
+      "phrases": [
+        "PiDog fais une demo",
+        "PiDog montre tes talents"
+      ],
+      "exemples": [
+        "pidog fais une demo",
+        "montre moi tes talents"
+      ],
+      "deplace": false,
+      "reponse": "C'est parti pour le spectacle !",
+      "sequence": [
+        {
+          "builtin": "demo"
+        }
+      ]
+    },
+    "patrouille": {
+      "intention": "partir explorer, surveiller, faire une ronde, se deplacer en autonomie",
+      "phrases": [
+        "PiDog patrouille",
+        "PiDog pars en ronde"
+      ],
+      "exemples": [],
+      "deplace": true,
+      "reponse": "Je pars en patrouille.",
+      "sequence": [
+        {
+          "builtin": "patrouille"
+        }
+      ]
+    },
+    "assis": {
+      "intention": "s'asseoir",
+      "phrases": [
+        "PiDog assis"
+      ],
+      "exemples": [
+        "assieds toi"
+      ],
+      "deplace": false,
+      "reponse": "Assis.",
+      "sequence": [
+        {
+          "action": "sit",
+          "speed": 70
+        }
+      ]
+    },
+    "debout": {
+      "intention": "se lever, se mettre debout",
+      "phrases": [
+        "PiDog debout"
+      ],
+      "exemples": [],
+      "deplace": false,
+      "reponse": "Debout.",
+      "sequence": [
+        {
+          "action": "stand",
+          "speed": 70
+        }
+      ]
+    },
+    "couche": {
+      "intention": "se coucher, s'allonger",
+      "phrases": [
+        "PiDog couche-toi"
+      ],
+      "exemples": [],
+      "deplace": false,
+      "reponse": "Je me couche.",
+      "sequence": [
+        {
+          "action": "lie",
+          "speed": 50
+        }
+      ]
+    },
+    "aboie": {
+      "intention": "aboyer, faire ouaf, donner de la voix",
+      "phrases": [
+        "PiDog aboie"
+      ],
+      "exemples": [],
+      "deplace": false,
+      "reponse": null,
+      "sequence": [
+        {
+          "action": "sit",
+          "speed": 60
+        },
+        {
+          "repeter": 2,
+          "etapes": [
+            {
+              "preset": "bark_action",
+              "args": {
+                "speak": "single_bark_1"
+              }
+            },
+            {
+              "pause": 0.4
+            }
+          ]
+        }
+      ]
+    },
+    "hurle": {
+      "intention": "hurler a la lune, faire le loup, faire aouuuh",
+      "phrases": [
+        "PiDog hurle",
+        "PiDog fais le loup"
+      ],
+      "exemples": [
+        "fais le loup"
+      ],
+      "deplace": false,
+      "reponse": null,
+      "sequence": [
+        {
+          "action": "sit",
+          "speed": 60
+        },
+        {
+          "preset": "howling"
+        }
+      ]
+    },
+    "patte": {
+      "intention": "donner la patte, serrer la papatte, faire un check",
+      "phrases": [
+        "PiDog donne la patte"
+      ],
+      "exemples": [],
+      "deplace": false,
+      "reponse": "Voila ma patte.",
+      "sequence": [
+        {
+          "preset": "hand_shake"
+        },
+        {
+          "pause": 0.5
+        },
+        {
+          "preset": "high_five"
+        }
+      ]
+    },
+    "pompes": {
+      "intention": "faire des pompes, des tractions, de la muscu",
+      "phrases": [
+        "PiDog fais des pompes"
+      ],
+      "exemples": [],
+      "deplace": false,
+      "reponse": "Et une, et deux !",
+      "sequence": [
+        {
+          "pattes": [
+            45,
+            -25,
+            -45,
+            25,
+            80,
+            70,
+            -80,
+            -70
+          ],
+          "speed": 50
+        },
+        {
+          "tete": [
+            0,
+            0,
+            -20
+          ],
+          "speed": 90
+        },
+        {
+          "led": {
+            "mode": "speak",
+            "color": "blue",
+            "bps": 2
+          }
+        },
+        {
+          "repeter": 3,
+          "etapes": [
+            {
+              "preset": "push_up",
+              "args": {
+                "speed": 92
+              }
+            },
+            {
+              "preset": "bark",
+              "args": {
+                "yrp": [
+                  0,
+                  0,
+                  -40
+                ]
+              }
+            },
+            {
+              "pause": 0.4
+            }
+          ]
+        }
+      ]
+    },
+    "danse": {
+      "intention": "danser, bouger son corps, se tortiller, faire la fete",
+      "phrases": [
+        "PiDog danse",
+        "PiDog bouge ton corps"
+      ],
+      "exemples": [
+        "bouge ton corps"
+      ],
+      "deplace": false,
+      "reponse": "Je danse !",
+      "sequence": [
+        {
+          "led": {
+            "mode": "boom",
+            "color": "pink",
+            "bps": 2
+          }
+        },
+        {
+          "preset": "body_twisting"
+        },
+        {
+          "preset": "shake_head_smooth",
+          "args": {
+            "amplitude": 45,
+            "speed": 90
+          }
+        },
+        {
+          "preset": "feet_shake"
+        }
+      ]
+    },
+    "gratte": {
+      "intention": "se gratter l'oreille avec la patte arriere, avoir des puces, se demanger",
+      "phrases": [
+        "PiDog gratte-toi"
+      ],
+      "exemples": [
+        "tu as des puces",
+        "gratte toi l'oreille"
+      ],
+      "deplace": false,
+      "reponse": "Aaah ca fait du bien !",
+      "sequence": [
+        {
+          "preset": "scratch"
+        }
+      ]
+    },
+    "dodo": {
+      "intention": "aller dormir, faire la sieste, bonne nuit, se reposer",
+      "phrases": [
+        "PiDog va dormir",
+        "PiDog bonne nuit"
+      ],
+      "exemples": [],
+      "deplace": false,
+      "reponse": "Bonne nuit.",
+      "sequence": [
+        {
+          "led": {
+            "mode": "breath",
+            "color": "white",
+            "bps": 0.4,
+            "brightness": 0.4
+          }
+        },
+        {
+          "action": "lie",
+          "speed": 50
+        },
+        {
+          "action": "doze_off",
+          "speed": 30,
+          "attendre": false
+        },
+        {
+          "pause": 4
+        },
+        {
+          "pattes_stop": true
+        },
+        {
+          "son": "snoring"
+        },
+        {
+          "pause": 3
+        }
+      ]
+    },
+    "stop": {
+      "intention": "arreter immediatement, ne plus bouger, chut",
+      "phrases": [
+        "PiDog stop",
+        "PiDog arrete-toi"
+      ],
+      "exemples": [],
+      "deplace": false,
+      "reponse": "J'arrete.",
+      "sequence": [
+        {
+          "builtin": "stop"
+        }
+      ]
+    },
+    "distance": {
+      "intention": "mesurer ou annoncer la distance de l'obstacle devant lui, ce qu'il a devant",
+      "phrases": [
+        "PiDog qu'est-ce que tu as devant toi"
+      ],
+      "exemples": [
+        "y a quoi devant toi",
+        "est ce que tu as devant toi",
+        "c'est quoi devant toi"
+      ],
+      "deplace": false,
+      "reponse": null,
+      "sequence": [
+        {
+          "builtin": "distance"
+        }
+      ]
+    },
+    "son_plus": {
+      "intention": "monter le volume, parler plus fort, augmenter le son, on ne t'entend pas",
+      "phrases": [
+        "PiDog son plus fort",
+        "PiDog augmente le son"
+      ],
+      "exemples": [
+        "pidog son plus fort",
+        "parle plus fort"
+      ],
+      "deplace": false,
+      "reponse": null,
+      "sequence": [
+        {
+          "builtin": "volume",
+          "sens": 1
+        }
+      ]
+    },
+    "son_moins": {
+      "intention": "baisser le volume, parler moins fort, diminuer le son, tu es trop fort",
+      "phrases": [
+        "PiDog son moins fort",
+        "PiDog baisse le son"
+      ],
+      "exemples": [
+        "pidog son moins fort",
+        "baisse le son"
+      ],
+      "deplace": false,
+      "reponse": null,
+      "sequence": [
+        {
+          "builtin": "volume",
+          "sens": -1
+        }
+      ]
+    },
+    "inconnu": {
+      "intention": "la phrase ne demande aucune de ces actions",
+      "phrases": [],
+      "exemples": [
+        "il fait beau aujourd hui"
+      ],
+      "deplace": false,
+      "reponse": null,
+      "sequence": []
+    }
+  }
+}
