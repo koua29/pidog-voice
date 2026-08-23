@@ -9,6 +9,11 @@ dans le cloud, aucune API payante.
 
 **Ajouter une commande = éditer un fichier JSON.** Aucun code à écrire.
 
+<p align="center">
+  <img src="assets/demo.gif" alt="Démonstration : PiDog obéit à la voix" width="420" /><br>
+  <sub><a href="assets/demo.mp4">▶ Voir la vidéo avec le son</a></sub>
+</p>
+
 ---
 
 ## Comment ça marche
