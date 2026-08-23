@@ -23,6 +23,7 @@ import io
 import json
 import math
 import os
+import re
 import struct
 import subprocess
 import sys
@@ -241,21 +242,48 @@ def parler(texte, oreilles=None):
 
 
 def monter_le_son():
-    """PipeWire demarre a 40% (-24 dB) : le chien est alors inaudible.
-    robot_hat.music_set_volume() ne sert a rien ici (sudo + controle 'PCM' inexistant).
-    PipeWire accepte >100% (sur-amplification) : 150% = +10.6 dB, 200% = +18 dB.
-    Au-dela, le petit haut-parleur sature. Regler via PIDOG_VOLUME."""
+    """Prepare la sortie audio du robot.
+
+    Deux pieges, tous deux constates apres un redemarrage :
+    1. PipeWire choisit parfois la sortie HDMI comme sink par defaut -> le chien
+       joue ses sons dans le vide. On force explicitement le haut-parleur du
+       robot-hat (platform-soc_sound).
+    2. Le volume revient a 40 % (-23,9 dB), le chien est alors inaudible.
+    robot_hat.music_set_volume() ne sert a rien ici : elle lance
+    `sudo amixer sset 'PCM'` (sudo refuse, et ce controle n'existe pas).
+    PipeWire accepte >100 % (150 %=+10,6 dB) mais le petit HP gresille : eviter.
+    """
+    def pactl(*args, capture=False):
+        return subprocess.run(["pactl", *args], capture_output=True,
+                              text=True, timeout=5).stdout
+
     try:
+        # 1. trouver le haut-parleur du robot parmi les sorties
+        sinks = pactl("list", "sinks", "short")
+        hp = next((l.split("\t")[1] for l in sinks.splitlines()
+                   if "soc_sound" in l), None)
+        if hp:
+            actuel = pactl("get-default-sink").strip()
+            if actuel != hp:
+                print(f"[ears] sortie audio corrigee : {actuel} -> {hp}")
+                pactl("set-default-sink", hp)
+        else:
+            print("[ears] !! haut-parleur du robot introuvable dans PipeWire")
+
+        # 2. volume
         if VOLUME:
-            subprocess.run(["pactl", "set-sink-volume", "@DEFAULT_SINK@", f"{VOLUME}%"],
-                           capture_output=True, timeout=5)
-        subprocess.run(["pactl", "set-sink-mute", "@DEFAULT_SINK@", "0"],
-                       capture_output=True, timeout=5)
-        v = subprocess.run(["pactl", "get-sink-volume", "@DEFAULT_SINK@"],
-                           capture_output=True, text=True, timeout=5).stdout
+            pactl("set-sink-volume", "@DEFAULT_SINK@", f"{VOLUME}%")
+        else:
+            v = pactl("get-sink-volume", "@DEFAULT_SINK@")
+            pct = int(re.search(r"(\d+)%", v).group(1)) if re.search(r"(\d+)%", v) else 0
+            if pct < 90:      # revenu au defaut apres un reboot : on remonte
+                print(f"[ears] volume a {pct}% -> 100%")
+                pactl("set-sink-volume", "@DEFAULT_SINK@", "100%")
+        pactl("set-sink-mute", "@DEFAULT_SINK@", "0")
+        v = pactl("get-sink-volume", "@DEFAULT_SINK@")
         print(f"[ears] volume sortie : {v.split('/')[1].strip() if '/' in v else '?'}")
     except Exception as e:
-        print(f"[ears] volume non regle ({type(e).__name__}) — son peut-etre faible")
+        print(f"[ears] audio non configure ({type(e).__name__}: {e}) — son possiblement muet")
 
 
 def contient_reveil(texte):
