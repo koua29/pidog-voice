@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1020 556" width="1020" height="556" font-family="-apple-system, Segoe UI, Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="fl" markerWidth="9" markerHeight="9" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6 z" fill="#33608f"/>
+    </marker>
+    <marker id="flr" markerWidth="9" markerHeight="9" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6 z" fill="#b3402f"/>
+    </marker>
+  </defs>
+
+  <rect width="1020" height="556" fill="#ffffff"/>
+  <text x="510" y="36" text-anchor="middle" font-size="23" font-weight="700" fill="#12232f">Architecture de pidog-voice</text>
+  <text x="510" y="58" text-anchor="middle" font-size="13" fill="#5b7183">Le robot capte et agit — l'ordinateur transcrit et comprend</text>
+
+  <!-- ============ PANNEAU ROBOT ============ -->
+  <rect x="24" y="80" width="584" height="404" rx="14" fill="#dbeefb" stroke="#8fc2e3"/>
+  <text x="304" y="108" text-anchor="middle" font-size="16" font-weight="700" fill="#12496e">🐕 PiDog — Raspberry Pi 4 (embarqué)</text>
+
+  <rect x="48" y="126" width="250" height="62" rx="9" fill="#fff" stroke="#a9cde6"/>
+  <text x="60" y="149" font-size="13" font-weight="600" fill="#12232f">🎙 Micro voiceHAT</text>
+  <text x="60" y="167" font-size="11" fill="#5b7183">détection d'énergie (VAD)</text>
+  <text x="60" y="181" font-size="11" fill="#5b7183">mot de réveil « PiDog »</text>
+
+  <rect x="48" y="212" width="250" height="72" rx="9" fill="#fff" stroke="#a9cde6"/>
+  <text x="60" y="235" font-size="13" font-weight="600" fill="#12232f">🍓 Cœur — pidog_ears.py</text>
+  <text x="60" y="253" font-size="11" fill="#5b7183">capture audio · exécute les actions</text>
+  <text x="60" y="270" font-size="11" fill="#5b7183">commandes lues dans commandes.json</text>
+
+  <rect x="48" y="308" width="250" height="58" rx="9" fill="#fff" stroke="#a9cde6"/>
+  <text x="60" y="331" font-size="13" font-weight="600" fill="#12232f">🔊 TTS — pico2wave (fr-FR)</text>
+  <text x="60" y="352" font-size="11" fill="#5b7183">la voix du chien, générée ICI</text>
+
+  <rect x="48" y="390" width="250" height="72" rx="9" fill="#fff" stroke="#a9cde6"/>
+  <text x="60" y="413" font-size="13" font-weight="600" fill="#12232f">🦿 Servos &amp; capteurs</text>
+  <text x="60" y="431" font-size="11" fill="#5b7183">12 servos · IMU · ultrason</text>
+  <text x="60" y="448" font-size="11" fill="#5b7183">capteur tactile · bandeau RGB</text>
+
+  <!-- arret d'urgence -->
+  <rect x="330" y="390" width="238" height="72" rx="9" fill="#fdeae7" stroke="#e5a99e"/>
+  <text x="344" y="413" font-size="13" font-weight="600" fill="#8c2f21">🛑 Arrêt d'urgence tactile</text>
+  <text x="344" y="431" font-size="11" fill="#8c2f21">une main sur la tête = stop immédiat</text>
+  <text x="344" y="448" font-size="11" fill="#8c2f21">coupe les servos, sans passer par le Mac</text>
+  <path d="M330,426 L302,426" fill="none" stroke="#b3402f" stroke-width="2.5" marker-end="url(#flr)"/>
+
+  <!-- fleches internes robot -->
+  <path d="M173,188 L173,212" fill="none" stroke="#33608f" stroke-width="2" marker-end="url(#fl)"/>
+  <path d="M120,284 L120,308" fill="none" stroke="#33608f" stroke-width="2" marker-end="url(#fl)"/>
+  <text x="128" y="300" font-size="10" fill="#33608f">texte à dire</text>
+  <path d="M240,284 L240,390" fill="none" stroke="#33608f" stroke-width="2" marker-end="url(#fl)"/>
+  <text x="248" y="380" font-size="10" fill="#33608f">mouvements</text>
+  <path d="M298,337 L330,337" fill="none" stroke="#33608f" stroke-width="2" marker-end="url(#fl)"/>
+  <text x="338" y="332" font-size="11" font-weight="600" fill="#33608f">🔈 haut-parleur</text>
+  <text x="338" y="348" font-size="11" fill="#5b7183">du robot</text>
+
+  <!-- ============ PANNEAU MAC ============ -->
+  <rect x="636" y="80" width="360" height="404" rx="14" fill="#eceff2" stroke="#c3cad1"/>
+  <text x="816" y="108" text-anchor="middle" font-size="16" font-weight="700" fill="#2c3a45">🖥 Mac — serveur d'IA</text>
+
+  <rect x="660" y="150" width="312" height="72" rx="9" fill="#fff" stroke="#ccd3da"/>
+  <text x="674" y="173" font-size="13" font-weight="600" fill="#12232f">📝 STT — faster-whisper « small »</text>
+  <text x="674" y="191" font-size="11" fill="#5b7183">audio → texte français</text>
+  <text x="674" y="208" font-size="11" fill="#5b7183">amorce de vocabulaire ≤ 223 tokens</text>
+
+  <rect x="660" y="262" width="312" height="72" rx="9" fill="#fff" stroke="#ccd3da"/>
+  <text x="674" y="285" font-size="13" font-weight="600" fill="#12232f">🧠 LLM — Ollama / llama3.2</text>
+  <text x="674" y="303" font-size="11" fill="#5b7183">texte → intention</text>
+  <text x="674" y="320" font-size="11" fill="#5b7183">sortie contrainte par JSON-schema</text>
+
+  <path d="M816,222 L816,262" fill="none" stroke="#33608f" stroke-width="2" marker-end="url(#fl)"/>
+  <text x="826" y="248" font-size="11" fill="#5b7183">transcription</text>
+
+  <rect x="660" y="386" width="312" height="76" rx="9" fill="#f7f8f9" stroke="#dfe4e8" stroke-dasharray="4 3"/>
+  <text x="674" y="408" font-size="12" font-weight="600" fill="#5b7183">Aucun audio ne redescend</text>
+  <text x="674" y="427" font-size="11" fill="#5b7183">Le Mac ne renvoie que du JSON.</text>
+  <text x="674" y="444" font-size="11" fill="#5b7183">La voix est synthétisée sur le robot.</text>
+
+  <!-- ============ RESEAU ============ -->
+  <path d="M298,232 L660,180" fill="none" stroke="#33608f" stroke-width="2.5" marker-end="url(#fl)"/>
+  <text x="404" y="196" font-size="11" font-weight="600" fill="#33608f">WAV (phrase détectée)</text>
+
+  <path d="M660,300 L300,262" fill="none" stroke="#33608f" stroke-width="2.5" marker-end="url(#fl)"/>
+  <text x="360" y="258" font-size="11" font-weight="600" fill="#33608f">{"action": "hurle", "confiance": 0.95}</text>
+
+
+  <!-- ============ LATENCES ============ -->
+  <rect x="24" y="502" width="972" height="38" rx="9" fill="#f4f6f8" stroke="#dfe4e8"/>
+  <text x="40" y="526" font-size="12" fill="#3d4f5c">
+    <tspan font-weight="700">Latence mesurée :</tspan>
+    <tspan dx="8">STT 1,2 s  +  LLM 0,5 s  +  réseau et exécution</tspan>
+    <tspan dx="10" font-weight="700" fill="#12496e">≈ 1,75 s</tspan>
+    <tspan dx="14" fill="#9aa7b1">|</tspan>
+    <tspan dx="14">Réseau local uniquement : aucune donnée ne sort, aucune API payante.</tspan>
+  </text>
+</svg>

@@ -14,12 +14,12 @@ dans le cloud, aucune API payante.
 ## Comment ça marche
 
 <p align="center">
-  <img src="assets/architecture.jpg" alt="Architecture de pidog-voice : robot embarqué et serveur d'IA" width="900" />
+  <img src="assets/architecture.svg" alt="Architecture de pidog-voice : robot embarqué et serveur d'IA" width="1000" />
 </p>
 
-Le robot capte et agit ; l'ordinateur transcrit et comprend. Entre les deux, du JSON
-sur le réseau local — jamais d'audio dans le sens retour : **la synthèse vocale
-(`pico2wave`) tourne sur le Pi**, seule l'action à exécuter transite depuis le Mac.
+Le robot capte et agit ; l'ordinateur transcrit et comprend. Entre les deux, **du JSON
+uniquement** : l'audio ne circule que dans le sens robot → Mac. La voix du chien est
+synthétisée sur le Pi (`pico2wave`), jamais transmise par le réseau.
 
 **~1,75 s** entre la fin de votre phrase et le premier mouvement.
 
