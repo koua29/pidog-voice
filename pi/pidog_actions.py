@@ -16,6 +16,8 @@ Une commande est une SEQUENCE d'etapes declaratives. Verbes disponibles :
   {"repeter": 3, "etapes": [...]}                    boucle
   {"builtin": "distance"}                            comportement code en Python
                                                      (demo|patrouille|stop|distance|volume)
+  {"externe": "~/pidog-patrol/patrol.py",            delegue a un projet separe
+   "args": ["--duree", "300"]}                       (voir pidog-patrol)
 
 SECURITE : une commande marquee "deplace": true est REFUSEE par defaut (le robot
 est le plus souvent sur une table). L'autoriser avec PIDOG_MARCHE=1.
@@ -142,10 +144,36 @@ class Executeur:
                 for sous in e.get("etapes", []):
                     self._etape(sous)
             return
+        if "externe" in e:
+            self._externe(e)
+            return
         if "builtin" in e:
             self._builtin(e)
             return
         print(f"[action] etape ignoree (verbe inconnu) : {e}")
+
+    def _externe(self, e):
+        """Delegue a un programme separe (ex: pidog-patrol).
+
+        Le programme appele prend la main sur le robot : cette ecoute doit donc
+        liberer le GPIO. C'est au programme externe de suspendre puis relancer
+        l'ecoute vocale — pidog-patrol le fait.
+        """
+        chemin = os.path.expanduser(e["externe"])
+        if not os.path.exists(chemin):
+            self.parler("Ce programme n'est pas installe.")
+            print(f"[externe] introuvable : {chemin}")
+            return
+        cmd = [sys.executable, chemin] + [str(a) for a in e.get("args", [])]
+        print(f"[externe] lancement : {' '.join(cmd)}")
+        env = dict(os.environ)
+        env.setdefault("PIDOG_MARCHE", "1" if self.autoriser_marche else "0")
+        try:
+            subprocess.Popen(cmd, env=env, cwd=os.path.dirname(chemin),
+                             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                             stdin=subprocess.DEVNULL, start_new_session=True)
+        except Exception as ex:
+            print(f"[externe] echec : {type(ex).__name__}: {ex}")
 
     # -- comportements qui demandent du vrai code ---------------------------
     def _builtin(self, e):

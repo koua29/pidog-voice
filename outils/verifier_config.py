@@ -18,8 +18,8 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from config import Config  # noqa: E402
 
 VERBES = {"action", "preset", "son", "led", "tete", "pattes", "pattes_stop",
-          "pause", "dire", "repeter", "builtin", "args", "speed", "sens",
-          "etapes", "attendre"}
+          "pause", "dire", "repeter", "builtin", "externe", "args", "speed",
+          "sens", "etapes", "attendre"}
 BUILTINS = {"demo", "patrouille", "stop", "distance", "volume"}
 ACTIONS_PIDOG = {"stand", "sit", "half_sit", "lie", "lie_with_hands_out", "forward",
                  "backward", "turn_left", "turn_right", "trot", "stretch", "push_up",
