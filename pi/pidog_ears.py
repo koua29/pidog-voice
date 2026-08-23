@@ -304,6 +304,33 @@ def monter_le_son():
         print(f"[ears] audio non configure ({type(e).__name__}: {e}) — son possiblement muet")
 
 
+MOTS_INSUFFISANTS = 2      # apres retrait du mot de reveil
+
+
+def reste_apres_reveil(texte):
+    """Ce qu'il reste de la phrase une fois le nom du robot retire.
+
+    « PiDog. » ne demande RIEN. Or le LLM doit choisir une action et prend la
+    premiere venue — en pratique `demo`. Combine a un chien qui s'entend lui-meme,
+    cela produit une boucle : il joue la demo, s'entend, rejoue la demo.
+    """
+    t = texte.lower().replace("-", " ")
+    for m in MOTS_REVEIL:
+        t = t.replace(m, " ")
+    return " ".join(t.replace(",", " ").replace(".", " ").replace("?", " ")
+                     .replace("!", " ").split())
+
+
+def hallucination(texte, seuil=2):
+    """Whisper part en boucle sur du bruit : « PiDog aboie. PiDog aboie. » x N.
+    Un segment identique repete est le signe qui ne trompe pas."""
+    bouts = [b.strip().lower() for b in texte.replace("!", ".").replace("?", ".").split(".")
+             if b.strip()]
+    if len(bouts) < seuil:
+        return False
+    return len(set(bouts)) == 1 and len(bouts) >= seuil
+
+
 def contient_reveil(texte):
     t = texte.lower().replace("-", " ")
     return any(m in t for m in MOTS_REVEIL)
@@ -373,9 +400,25 @@ def main():
         texte = (r.get("texte") or "").strip()
         if not texte:
             return
+        # PENDANT UNE COMMANDE, SEUL « STOP » EST ECOUTE.
+        # Sinon le chien s'entend aboyer/bouger et relance des commandes en boucle
+        # — constate en usage reel : demo -> s'entend -> demo -> ...
+        occupe = ex.occupe
+
+        if hallucination(texte):
+            print(f"   [rejete] hallucination Whisper : « {texte[:60]}... »")
+            return
+
+        reste = reste_apres_reveil(texte)
+        if len(reste) < MOTS_INSUFFISANTS:
+            print(f"   [rejete] « {texte} » ne demande rien (mot de reveil seul)")
+            return
+
         en_conversation = (time.time() - dernier_ordre) < FENETRE_CONVERSATION
         reveil = contient_reveil(texte)
-        marque = "REVEIL" if reveil else ("SUITE" if en_conversation else "ignore")
+        marque = ("REVEIL" if reveil else ("SUITE" if en_conversation else "ignore"))
+        if occupe:
+            marque += "/occupe"
         print(f"   [{marque}] « {texte} »  -> {r.get('action')} "
               f"(conf {r.get('confiance')}, stt {r.get('latence_stt')}s)")
         if not (reveil or en_conversation):
@@ -383,13 +426,16 @@ def main():
         action = r.get("action", "inconnu")
         if action == "inconnu":
             return
+        if occupe and action != "stop":
+            print(f"   [ignore] « {action} » pendant l'execution — seul « stop » est ecoute")
+            return
         dernier_ordre = time.time()
         dog.rgb_strip.set_mode('boom', color='yellow', bps=2)
         phrase = ex.executer(action)
         if phrase:
             parler(phrase, o)
         else:
-            o.se_taire_pendant(1.5)
+            o.se_taire_pendant(2.0)   # le chien aboie souvent juste apres
         dog.rgb_strip.set_mode('breath', color='cyan', bps=0.5)
 
     try:
