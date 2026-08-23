@@ -165,13 +165,20 @@ class Executeur:
             print(f"[externe] introuvable : {chemin}")
             return
         cmd = [sys.executable, chemin] + [str(a) for a in e.get("args", [])]
-        print(f"[externe] lancement : {' '.join(cmd)}")
+        # Journaliser plutot que jeter la sortie : sans cela, un programme lance
+        # a la voix est indebuggable — on ne sait meme pas pourquoi il a echoue.
+        log = os.path.expanduser(
+            f"~/{os.path.splitext(os.path.basename(chemin))[0]}.log")
+        print(f"[externe] lancement : {' '.join(cmd)}  (journal : {log})")
         env = dict(os.environ)
         env.setdefault("PIDOG_MARCHE", "1" if self.autoriser_marche else "0")
         try:
-            subprocess.Popen(cmd, env=env, cwd=os.path.dirname(chemin),
-                             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
-                             stdin=subprocess.DEVNULL, start_new_session=True)
+            with open(log, "a", encoding="utf-8") as f:
+                f.write(f"\n===== lance par la voix {time.strftime('%Y-%m-%d %H:%M:%S')} =====\n")
+                f.flush()
+                subprocess.Popen(cmd, env=env, cwd=os.path.dirname(chemin),
+                                 stdout=f, stderr=subprocess.STDOUT,
+                                 stdin=subprocess.DEVNULL, start_new_session=True)
         except Exception as ex:
             print(f"[externe] echec : {type(ex).__name__}: {ex}")
 
