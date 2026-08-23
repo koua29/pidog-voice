@@ -13,18 +13,13 @@ dans le cloud, aucune API payante.
 
 ## Comment ça marche
 
-```
-     ROBOT (Raspberry Pi 4)                 CERVEAU (Mac / PC / tout ordinateur)
-┌────────────────────────────┐        ┌──────────────────────────────────────┐
-│ micro voiceHAT             │        │                                      │
-│   ↓                        │        │   faster-whisper  (transcription)    │
-│ détection d'énergie (VAD)  │  WAV   │        ↓                             │
-│   ↓                        │ ─────► │   Ollama + llama3.2  (intention)     │
-│ mot de réveil « PiDog »    │ ◄───── │        ↓                             │
-│   ↓                        │ action │   { "action": "hurle" }              │
-│ exécution des mouvements   │        │                                      │
-└────────────────────────────┘        └──────────────────────────────────────┘
-```
+<p align="center">
+  <img src="assets/architecture.jpg" alt="Architecture de pidog-voice : robot embarqué et serveur d'IA" width="900" />
+</p>
+
+Le robot capte et agit ; l'ordinateur transcrit et comprend. Entre les deux, du JSON
+sur le réseau local — jamais d'audio dans le sens retour : **la synthèse vocale
+(`pico2wave`) tourne sur le Pi**, seule l'action à exécuter transite depuis le Mac.
 
 **~1,75 s** entre la fin de votre phrase et le premier mouvement.
 
@@ -64,6 +59,40 @@ ssh pidog@<ip-du-robot>
 export PIDOG_MAC=http://<ip-de-votre-ordinateur>:8770
 ~/pidog-voice/pi/ears_loop.sh        # écoute supervisée
 ```
+
+### Démarrage automatique
+
+```bash
+./install/mac_autostart.sh          # Mac : LaunchAgent (venv dédié créé au passage)
+PIDOG_MAC=http://192.168.1.26:8770 PIDOG_MARCHE=1 ./install/pi_autostart.sh   # Pi : cron @reboot
+```
+
+Les deux s'ajoutent `--retirer` pour désinstaller. Le Mac relance le serveur s'il meurt
+(`KeepAlive`), le Pi s'appuie sur `ears_loop.sh` qui supervise déjà l'écoute.
+
+> **macOS** : ne placez pas le projet dans `~/Documents`, `~/Bureau` ou `~/Téléchargements`.
+> La protection TCC interdit aux services lancés par `launchd` d'y accéder — le serveur
+> ne peut même pas lire son propre venv (`Operation not permitted`). `~/pidog-voice` convient.
+
+> **Raspberry Pi** : `cron` plutôt que systemd, pour n'exiger aucun privilège root.
+> L'option `--boot` attend que PipeWire et le réseau soient prêts avant de démarrer.
+
+---
+
+## 🛑 Arrêt d'urgence
+
+**Posez la main sur la tête du chien : il s'arrête immédiatement.**
+
+Le capteur tactile est le seul moyen d'arrêt fiable pendant un déplacement, et il est
+actif dès qu'une commande déplace le robot. La voix ne suffit pas :
+
+- elle passe par le réseau et par Whisper — **1,2 s dans le meilleur cas** ;
+- les servos en mouvement produisent un bruit **42× supérieur** au silence et couvrent
+  la parole (mesuré : 35 à l'arrêt, 1513 en mouvement) ;
+- Whisper peut partir en boucle sur du bruit — constaté, **39 s de transcription**
+  pendant lesquelles le robot est totalement sourd.
+
+Le tactile, lui, est local, instantané, et ne dépend de rien.
 
 ---
 

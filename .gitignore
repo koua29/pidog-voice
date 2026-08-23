@@ -5,3 +5,4 @@ venv-stt/
 *.log
 *.wav
 .DS_Store
+.venv/

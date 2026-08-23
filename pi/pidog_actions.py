@@ -65,6 +65,29 @@ class Executeur:
         self.parler = parler or (lambda t: None)
         self._annuler = threading.Event()
         self._thread = None
+        self._veille = None
+        self._veille_stop = threading.Event()
+
+    # -- arret d'urgence par le capteur tactile -----------------------------
+    def _surveiller_tactile(self):
+        """ARRET D'URGENCE : une main sur la tete stoppe tout, immediatement.
+
+        Indispensable : la voix passe par le reseau, Whisper peut mettre plusieurs
+        secondes (et jusqu'a 39 s s'il part en boucle sur du bruit), et les servos
+        en mouvement couvrent la voix. Le tactile, lui, est local et instantane.
+        """
+        while not self._veille_stop.wait(0.1):
+            try:
+                if self.dog.dual_touch.read() != 'N':
+                    print("[URGENCE] tete touchee -> arret immediat")
+                    self._annuler.set()
+                    self.dog.legs_stop()
+                    self.dog.head_stop()
+                    self.dog.tail_stop()
+                    self.dog.rgb_strip.set_mode('bark', color='red', bps=3)
+                    return
+            except Exception:
+                pass
 
     @property
     def occupe(self):
@@ -229,6 +252,7 @@ class Executeur:
 
     # -- pilotage ------------------------------------------------------------
     def stop(self):
+        self._veille_stop.set()
         self._annuler.set()
         self.dog.legs_stop()
         self.dog.head_stop()
@@ -266,8 +290,16 @@ class Executeur:
 
         self._thread = threading.Thread(target=_run, daemon=True)
         self._thread.start()
+
+        # veille tactile active pendant toute commande qui deplace le robot
+        if self.cfg.deplace(action):
+            self._veille_stop.clear()
+            self._veille = threading.Thread(target=self._surveiller_tactile, daemon=True)
+            self._veille.start()
+
         if bloquant:
             self._thread.join()
+            self._veille_stop.set()
         return self.cfg.reponse(action)
 
 

@@ -49,8 +49,15 @@ print(f"[stt] modele pret en {time.time() - _t0:.1f}s", flush=True)
 def transcrire(wav_bytes):
     import io
     t0 = time.time()
-    segs, _ = MODEL.transcribe(io.BytesIO(wav_bytes), language="fr", beam_size=1,
-                               vad_filter=True, initial_prompt=BIAIS)
+    segs, _ = MODEL.transcribe(
+        io.BytesIO(wav_bytes), language="fr", beam_size=1,
+        vad_filter=True, initial_prompt=BIAIS,
+        # Sans ceci, Whisper part en boucle sur du bruit : constate le 23/08/2026,
+        # « PiDog est fort. » repete 37 fois, 39 s de transcription — pendant
+        # lesquelles le robot est sourd et ne peut plus recevoir « stop ».
+        condition_on_previous_text=False,
+        no_speech_threshold=0.5,
+        compression_ratio_threshold=2.0)   # rejette les sorties trop repetitives
     texte = " ".join(s.text.strip() for s in segs).strip()
     return texte, round(time.time() - t0, 2)
 

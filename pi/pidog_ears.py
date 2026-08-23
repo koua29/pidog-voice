@@ -321,10 +321,12 @@ def main():
     try:
         print("[ears] serveur Mac :", o.sante())
     except Exception as e:
+        # Au demarrage automatique, le reseau n'est pas encore pret : il FAUT
+        # sortir en erreur pour que le superviseur reessaie. Un retour normal
+        # serait interprete comme un arret volontaire et stopperait tout.
         print(f"[ears] !! Mac injoignable sur {MAC} : {e}")
-        print("       lance sur le Mac : ~/.claude/skills/youtube-transcript/venv/bin/"
-              "python ~/Documents/PiDog/stt_server.py")
-        return
+        print(f"       verifier que stt_server.py tourne, et PIDOG_MAC={MAC}")
+        sys.exit(1)
 
     if "--test-audio" in args:
         print("[ears] enregistrement 4 s — PARLEZ maintenant")
