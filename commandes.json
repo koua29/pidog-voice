@@ -53,7 +53,14 @@
         {
           "builtin": "patrouille"
         }
-      ]
+      ],
+      "params": {
+        "seuil_cm": 40,
+        "pas_par_cycle": 2,
+        "cycles": 40,
+        "mesures_par_controle": 5,
+        "portee_max_cm": 300
+      }
     },
     "assis": {
       "intention": "s'asseoir",

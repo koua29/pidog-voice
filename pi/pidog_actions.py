@@ -172,22 +172,60 @@ class Executeur:
                 self._etape(e)
             time.sleep(0.4)
 
+    def _distance_fiable(self, n=5, portee_max=300):
+        """Distance en cm, filtree du bruit de la marche.
+
+        Le capteur est sur la TETE : chaque pas fait tanguer le corps, le faisceau
+        part au plafond et renvoie des echos parasites. Mesure : a l'arret 68 cm
+        +/-1, en marchant la meme scene donne 60..155.
+        Les parasites sont TOUJOURS plus longs que la vraie distance (un obstacle
+        ne peut pas etre plus loin qu'il n'est) -> on garde le MINIMUM, pas la moyenne.
+        """
+        lues = []
+        for _ in range(n):
+            v = self.dog.read_distance()
+            if 0 < v < portee_max:
+                lues.append(v)
+            time.sleep(0.03)
+        return min(lues) if lues else None
+
     def _patrouille(self):
         d = self.dog
+        p = self.cfg.params("patrouille", {
+            "seuil_cm": 40, "pas_par_cycle": 2, "cycles": 40,
+            "mesures_par_controle": 5, "portee_max_cm": 300})
+
         d.do_action('stand', speed=70)
         d.wait_all_done()
-        for _ in range(20):
+        d.head_move([[0, 0, 0]], speed=80)      # tete droite = faisceau vers l'avant
+        d.wait_all_done()
+
+        bloque = 0
+        for _ in range(int(p["cycles"])):
             if self._annuler.is_set():
                 return
-            dist = d.read_distance()
-            if 0 < dist < 25:
+            dist = self._distance_fiable(int(p["mesures_par_controle"]),
+                                         float(p["portee_max_cm"]))
+            if dist is None:                     # capteur muet : prudence
+                print("[patrouille] capteur sans echo -> demi-tour")
+                d.do_action('turn_left', step_count=4, speed=88)
+                d.wait_all_done()
+                continue
+
+            print(f"[patrouille] {dist:.0f} cm")
+            if dist < float(p["seuil_cm"]):
+                bloque += 1
                 d.rgb_strip.set_mode('bark', color='red', bps=2)
                 d.speak('single_bark_1')
-                d.do_action('turn_left', step_count=3, speed=88)
+                # plus il insiste, plus il tourne : evite de rester coince dans un coin
+                d.do_action('turn_left', step_count=3 + min(bloque, 4), speed=88)
+                d.wait_all_done()
             else:
+                bloque = 0
                 d.rgb_strip.set_mode('breath', color='green', bps=1)
-                d.do_action('forward', step_count=3, speed=90)
-            d.wait_all_done()
+                # avance par PETITS increments, avec un controle entre chaque
+                d.do_action('forward', step_count=int(p["pas_par_cycle"]), speed=90)
+                d.wait_all_done()
 
     # -- pilotage ------------------------------------------------------------
     def stop(self):

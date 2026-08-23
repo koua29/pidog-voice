@@ -72,6 +72,12 @@ class Config:
     def sequence(self, nom):
         return self.commandes.get(nom, {}).get("sequence", [])
 
+    def params(self, nom, defauts=None):
+        """Reglages libres d'une commande (champ 'params'), fusionnes aux defauts."""
+        out = dict(defauts or {})
+        out.update(self.commandes.get(nom, {}).get("params", {}))
+        return out
+
     def reponse(self, nom):
         return self.commandes.get(nom, {}).get("reponse")
 
