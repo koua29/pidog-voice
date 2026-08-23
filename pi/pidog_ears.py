@@ -57,6 +57,13 @@ FIN_PAROLE = 25       # trames calmes consecutives pour arreter (~750 ms)
 MAX_S = 8.0
 MIN_S = 0.4
 MARGE_BRUIT = 3.5     # seuil = bruit_ambiant * MARGE_BRUIT
+SEUIL_MIN = 350       # plancher
+SEUIL_MAX = 600       # plafond : une calibration faite pendant un mouvement
+                      # donnerait sinon un seuil qui rend le robot sourd
+SEUIL_MOUVEMENT = 2400  # servos en mouvement = RMS ~1500 (x42 le silence).
+                      # Pendant qu'il bouge on ne retient que la parole forte,
+                      # sinon il s'entend lui-meme en continu. Mesure 23/08/2026 :
+                      # immobile 35, assis 38, queue qui remue 1513 (max 2118).
 
 BIAIS_LOCAL = CFG.biais()
 
@@ -143,7 +150,10 @@ class Oreilles:
         self._fermer()
         niveaux.sort()
         fond = niveaux[len(niveaux) // 2] if niveaux else 200.0   # mediane
-        self.seuil = max(fond * MARGE_BRUIT, 350.0)
+        self.seuil = min(max(fond * MARGE_BRUIT, SEUIL_MIN), SEUIL_MAX)
+        if fond * MARGE_BRUIT > SEUIL_MAX:
+            print(f"[ears] !! bruit eleve pendant la calibration ({fond:.0f}) — "
+                  f"le robot bougeait ? seuil plafonne a {SEUIL_MAX}")
         return fond, self.seuil
 
     # -- reseau -------------------------------------------------------------
@@ -178,10 +188,17 @@ class Oreilles:
             return json.loads(r.read())
 
     # -- boucle --------------------------------------------------------------
-    def ecouter(self, on_parole):
-        """Boucle infinie : detecte une phrase, appelle on_parole(wav_bytes)."""
+    def ecouter(self, on_parole, en_mouvement=None):
+        """Boucle infinie : detecte une phrase, appelle on_parole(wav_bytes).
+
+        en_mouvement() : callable renvoyant True quand le robot bouge. Les servos
+        montent alors le bruit a ~1500 RMS (x42 le silence) : on releve le seuil
+        pour ne pas s'ecouter soi-meme, tout en restant sensible a un ordre crie
+        (indispensable pour « PiDog stop » pendant une patrouille).
+        """
         if self.seuil is None:
             self.calibrer()
+        en_mouvement = en_mouvement or (lambda: False)
         self._ouvrir()
         tampon, calmes, bruyantes, enregistre = [], 0, 0, False
         try:
@@ -193,7 +210,8 @@ class Oreilles:
                     tampon, enregistre, bruyantes = [], False, 0
                     continue
 
-                fort = rms(t) > self.seuil
+                seuil = SEUIL_MOUVEMENT if en_mouvement() else self.seuil
+                fort = rms(t) > seuil
                 if not enregistre:
                     bruyantes = bruyantes + 1 if fort else 0
                     tampon.append(t)
@@ -373,7 +391,7 @@ def main():
         dog.rgb_strip.set_mode('breath', color='cyan', bps=0.5)
 
     try:
-        o.ecouter(sur_parole)
+        o.ecouter(sur_parole, en_mouvement=lambda: ex.occupe)
     except KeyboardInterrupt:
         print("\n[ears] arret")
     finally:

@@ -21,13 +21,21 @@ class Config:
         self.commandes = self.brut["commandes"]
         self.reglages = self.brut.get("reglages", {})
 
+    # -- identite du robot ---------------------------------------------------
+    def nom(self):
+        """Nom du robot. Change le mot de reveil, l'amorce Whisper et le prompt."""
+        return self.reglages.get("nom", "PiDog")
+
+    def _n(self, texte):
+        return texte.replace("{nom}", self.nom())
+
     # -- pour Whisper --------------------------------------------------------
     def biais(self):
         """Phrases d'amorce. ⚠️ Whisper tronque a 223 tokens en gardant la FIN :
         verifier avec outils/verifier_config.py apres toute modification."""
-        bouts = [self.reglages.get("prefixe_biais", "")]
+        bouts = [self._n(self.reglages.get("prefixe_biais", ""))]
         for c in self.commandes.values():
-            bouts += [p.rstrip(".") + ". " for p in c.get("phrases", [])]
+            bouts += [self._n(p).rstrip(".") + ". " for p in c.get("phrases", [])]
         return "".join(bouts).strip()
 
     # -- pour le LLM ---------------------------------------------------------
@@ -47,9 +55,9 @@ class Config:
 
     def systeme(self):
         return (
-            "Tu es l'interpreteur de commandes vocales d'un robot chien nomme PiDog.\n"
+            f"Tu es l'interpreteur de commandes vocales d'un robot chien nomme {self.nom()}.\n"
             "Le texte vient d'une reconnaissance vocale francaise et peut etre deforme "
-            "(le nom 'PiDog' peut devenir 'pi dog', 'qui doit'...). Raisonne sur "
+            f"(le nom '{self.nom()}' peut etre mal transcrit). Raisonne sur "
             "l'INTENTION, pas sur les mots exacts.\n\nActions possibles :\n"
             + "\n".join(f"- {n} : {d}" for n, d in self.catalogue().items())
             + "\n\nChoisis l'action dont la description colle le mieux. Ne reponds "
@@ -85,7 +93,10 @@ class Config:
         return self.commandes.get(nom, {}).get("deplace", False)
 
     def mots_reveil(self):
-        return tuple(self.reglages.get("mot_reveil", ["pidog"]))
+        """Nom du robot + ses deformations connues, tout en minuscules."""
+        mots = [self.nom().lower()]
+        mots += [v.lower() for v in self.reglages.get("variantes_reveil", [])]
+        return tuple(dict.fromkeys(mots))          # dedoublonne, ordre conserve
 
     def fenetre_conversation(self):
         return float(self.reglages.get("fenetre_conversation_s", 12.0))

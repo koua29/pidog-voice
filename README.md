@@ -121,8 +121,52 @@ python3 outils/verifier_config.py --tokens
 
 ## Les commandes livrées
 
-`demo` `assis` `debout` `couche` `aboie` `hurle` `patte` `pompes` `danse` `gratte`
-`dodo` `stop` `distance` `son_plus` `son_moins` — et `patrouille`, verrouillée par défaut.
+Ce tableau est **généré depuis `commandes.json`** (`python3 outils/lister_commandes.py
+--injecter`) : il ne peut donc pas mentir sur ce que le robot sait faire.
+
+<!-- COMMANDES:debut -->
+| Commande | Ce qu'il fait | Dites par exemple |
+|---|---|---|
+| `demo` | Jouer le spectacle complet | *« PiDog fais une demo »*, *« PiDog montre tes talents »*, *« pidog fais une demo »* |
+| `patrouille` 🔒 | Partir explorer | *« PiDog patrouille »*, *« PiDog pars en ronde »* |
+| `assis` | S'asseoir | *« PiDog assis »*, *« assieds toi »* |
+| `debout` | Se lever | *« PiDog debout »* |
+| `couche` | Se coucher | *« PiDog couche-toi »* |
+| `aboie` | Aboyer | *« PiDog aboie »* |
+| `hurle` | Hurler a la lune | *« PiDog hurle »*, *« PiDog fais le loup »*, *« fais le loup »* |
+| `patte` | Donner la patte | *« PiDog donne la patte »* |
+| `pompes` | Faire des pompes | *« PiDog fais des pompes »* |
+| `danse` | Danser | *« PiDog danse »*, *« PiDog bouge ton corps »*, *« bouge ton corps »* |
+| `gratte` | Se gratter l'oreille avec la patte arriere | *« PiDog gratte-toi »*, *« tu as des puces »* |
+| `dodo` | Aller dormir | *« PiDog va dormir »*, *« PiDog bonne nuit »* |
+| `stop` | Arreter immediatement | *« PiDog stop »*, *« PiDog arrete-toi »* |
+| `distance` | Mesurer ou annoncer la distance de l'obstacle devant lui | *« PiDog qu'est-ce que tu as devant toi »*, *« y a quoi devant toi »* |
+| `son_plus` | Monter le volume | *« PiDog son plus fort »*, *« PiDog augmente le son »*, *« pidog son plus fort »* |
+| `son_moins` | Baisser le volume | *« PiDog son moins fort »*, *« PiDog baisse le son »*, *« pidog son moins fort »* |
+
+🔒 = déplace le robot : refusé tant que `PIDOG_MARCHE=1` n'est pas défini (il est probablement sur une table).
+<!-- COMMANDES:fin -->
+
+Le chien accepte bien plus de formulations que celles-ci : c'est le LLM qui interprète
+l'intention. *« montre-moi ce que tu sais faire »*, *« tu as des puces ? »* ou
+*« on ne t'entend pas »* fonctionnent sans être listés nulle part.
+
+### Renommer le robot
+
+Le nom traverse les trois étages (mot de réveil, amorce Whisper, prompt du LLM).
+Il tient dans un seul réglage :
+
+```json
+"reglages": {
+  "nom": "Rex",
+  "variantes_reveil": ["rexe", "raiks", "rek"]
+}
+```
+
+Les `phrases` des commandes utilisent le marqueur `{nom}`, substitué au chargement —
+rien d'autre à modifier. Pensez à **réécrire `variantes_reveil`** : ce sont les
+déformations que la reconnaissance vocale fait subir au nom, et celles de « PiDog »
+ne valent évidemment pas pour « Rex ». Le nom lui-même est ajouté automatiquement.
 
 ## 🚨 Sécurité : le robot est souvent sur une table
 

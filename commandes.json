@@ -9,8 +9,9 @@
     "Verifier ensuite avec : python3 outils/verifier_config.py"
   ],
   "reglages": {
-    "mot_reveil": [
-      "pidog",
+    "nom": "PiDog",
+    "_nom_aide": "Nom du robot. Utilise partout : mot de reveil, amorce Whisper ({nom} dans les phrases) et prompt du LLM. Le changer suffit.",
+    "variantes_reveil": [
       "pi dog",
       "pidogue",
       "py dog",
@@ -18,15 +19,16 @@
       "pidoc",
       "pidock"
     ],
+    "_variantes_aide": "Deformations frequentes du nom par la reconnaissance vocale. A REECRIRE si vous changez 'nom' : ces variantes-ci ne valent que pour PiDog. Le nom lui-meme est ajoute automatiquement.",
     "fenetre_conversation_s": 12.0,
-    "prefixe_biais": "Ordres au robot chien PiDog. "
+    "prefixe_biais": "Ordres au robot chien {nom}. "
   },
   "commandes": {
     "demo": {
       "intention": "jouer le spectacle complet, montrer tout son repertoire, faire son numero",
       "phrases": [
-        "PiDog fais une demo",
-        "PiDog montre tes talents"
+        "{nom} fais une demo",
+        "{nom} montre tes talents"
       ],
       "exemples": [
         "pidog fais une demo",
@@ -43,8 +45,8 @@
     "patrouille": {
       "intention": "partir explorer, surveiller, faire une ronde, se deplacer en autonomie",
       "phrases": [
-        "PiDog patrouille",
-        "PiDog pars en ronde"
+        "{nom} patrouille",
+        "{nom} pars en ronde"
       ],
       "exemples": [],
       "deplace": true,
@@ -65,7 +67,7 @@
     "assis": {
       "intention": "s'asseoir",
       "phrases": [
-        "PiDog assis"
+        "{nom} assis"
       ],
       "exemples": [
         "assieds toi"
@@ -82,7 +84,7 @@
     "debout": {
       "intention": "se lever, se mettre debout",
       "phrases": [
-        "PiDog debout"
+        "{nom} debout"
       ],
       "exemples": [],
       "deplace": false,
@@ -97,7 +99,7 @@
     "couche": {
       "intention": "se coucher, s'allonger",
       "phrases": [
-        "PiDog couche-toi"
+        "{nom} couche-toi"
       ],
       "exemples": [],
       "deplace": false,
@@ -112,7 +114,7 @@
     "aboie": {
       "intention": "aboyer, faire ouaf, donner de la voix",
       "phrases": [
-        "PiDog aboie"
+        "{nom} aboie"
       ],
       "exemples": [],
       "deplace": false,
@@ -141,8 +143,8 @@
     "hurle": {
       "intention": "hurler a la lune, faire le loup, faire aouuuh",
       "phrases": [
-        "PiDog hurle",
-        "PiDog fais le loup"
+        "{nom} hurle",
+        "{nom} fais le loup"
       ],
       "exemples": [
         "fais le loup"
@@ -162,7 +164,7 @@
     "patte": {
       "intention": "donner la patte, serrer la papatte, faire un check",
       "phrases": [
-        "PiDog donne la patte"
+        "{nom} donne la patte"
       ],
       "exemples": [],
       "deplace": false,
@@ -182,7 +184,7 @@
     "pompes": {
       "intention": "faire des pompes, des tractions, de la muscu",
       "phrases": [
-        "PiDog fais des pompes"
+        "{nom} fais des pompes"
       ],
       "exemples": [],
       "deplace": false,
@@ -245,8 +247,8 @@
     "danse": {
       "intention": "danser, bouger son corps, se tortiller, faire la fete",
       "phrases": [
-        "PiDog danse",
-        "PiDog bouge ton corps"
+        "{nom} danse",
+        "{nom} bouge ton corps"
       ],
       "exemples": [
         "bouge ton corps"
@@ -279,7 +281,7 @@
     "gratte": {
       "intention": "se gratter l'oreille avec la patte arriere, avoir des puces, se demanger",
       "phrases": [
-        "PiDog gratte-toi"
+        "{nom} gratte-toi"
       ],
       "exemples": [
         "tu as des puces",
@@ -296,8 +298,8 @@
     "dodo": {
       "intention": "aller dormir, faire la sieste, bonne nuit, se reposer",
       "phrases": [
-        "PiDog va dormir",
-        "PiDog bonne nuit"
+        "{nom} va dormir",
+        "{nom} bonne nuit"
       ],
       "exemples": [],
       "deplace": false,
@@ -337,8 +339,8 @@
     "stop": {
       "intention": "arreter immediatement, ne plus bouger, chut",
       "phrases": [
-        "PiDog stop",
-        "PiDog arrete-toi"
+        "{nom} stop",
+        "{nom} arrete-toi"
       ],
       "exemples": [],
       "deplace": false,
@@ -352,7 +354,7 @@
     "distance": {
       "intention": "mesurer ou annoncer la distance de l'obstacle devant lui, ce qu'il a devant",
       "phrases": [
-        "PiDog qu'est-ce que tu as devant toi"
+        "{nom} qu'est-ce que tu as devant toi"
       ],
       "exemples": [
         "y a quoi devant toi",
@@ -370,8 +372,8 @@
     "son_plus": {
       "intention": "monter le volume, parler plus fort, augmenter le son, on ne t'entend pas",
       "phrases": [
-        "PiDog son plus fort",
-        "PiDog augmente le son"
+        "{nom} son plus fort",
+        "{nom} augmente le son"
       ],
       "exemples": [
         "pidog son plus fort",
@@ -389,8 +391,8 @@
     "son_moins": {
       "intention": "baisser le volume, parler moins fort, diminuer le son, tu es trop fort",
       "phrases": [
-        "PiDog son moins fort",
-        "PiDog baisse le son"
+        "{nom} son moins fort",
+        "{nom} baisse le son"
       ],
       "exemples": [
         "pidog son moins fort",
