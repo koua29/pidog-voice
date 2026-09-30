@@ -260,11 +260,13 @@ tourner l'IA.*
   <b><a href="https://www.amazon.com/dp/B0B7NVMBPL?linkCode=ll2&amp;tag=koua29-20&amp;ref_=as_li_ss_tl">SanDisk 64 GB microSD (2-pack)</a></b><br><sub>Raspberry Pi OS et les fichiers du projet</sub>
 </td>
 <td align="center" width="33%">
-  <a href="https://www.amazon.com/dp/B0DM71CDHV?linkCode=ll2&amp;tag=koua29-20&amp;ref_=as_li_ss_tl"><img src="assets/amazon-B0DM71CDHV.jpg" width="200" alt="Apple Mac mini (M4)"></a><br>
-  <b><a href="https://www.amazon.com/dp/B0DM71CDHV?linkCode=ll2&amp;tag=koua29-20&amp;ref_=as_li_ss_tl">Apple Mac mini (M4)</a></b><br><sub>Le cerveau — Whisper + Ollama</sub>
+  <a href="https://www.amazon.com/dp/B0FLD69KFF?linkCode=ll2&amp;tag=koua29-20&amp;ref_=as_li_ss_tl"><img src="assets/amazon-B0FLD69KFF.jpg" width="200" alt="Anker Soundcore 2 (enceinte Bluetooth)"></a><br>
+  <b><a href="https://www.amazon.com/dp/B0FLD69KFF?linkCode=ll2&amp;tag=koua29-20&amp;ref_=as_li_ss_tl">Anker Soundcore 2 (enceinte Bluetooth)</a></b><br><sub>La musique que le chien écoute, et ses réponses</sub>
 </td>
 </tr>
 </table>
+
+<sub>En tant que Partenaire Amazon, je réalise un bénéfice sur les achats remplissant les conditions requises. · As an Amazon Associate I earn from qualifying purchases.</sub>
 
 ## ☕ Offrez-moi un café
 
