@@ -1,110 +1,114 @@
 # 🐕 pidog-voice
 
-**Commande vocale française pour le robot chien SunFounder PiDog.**
-Le micro est sur le robot, le cerveau est sur votre ordinateur.
+<p align="center">🇺🇸 <b>English</b> · 🇫🇷 <a href="README.fr.md">Français</a></p>
 
-Parlez au chien, il obéit : *« PiDog, fais le loup »*, *« PiDog, donne la patte »*,
-*« PiDog, son plus fort »*. Tout tourne **en local** — aucune donnée n'est envoyée
-dans le cloud, aucune API payante.
+**French voice control for the SunFounder PiDog robot dog.**
+The microphone is on the robot, the brain is on your computer.
 
-**Ajouter une commande = éditer un fichier JSON.** Aucun code à écrire.
+Talk to the dog, it obeys: *« PiDog, fais le loup »* (howl like a wolf), *« PiDog, donne la patte »* (give me your paw),
+*« PiDog, son plus fort »* (louder). Everything runs **locally** — no data is sent
+to the cloud, no paid API.
+
+**Adding a command = editing a JSON file.** No code to write.
+
+> 🇫🇷 The dog understands **French** out of the box (Whisper + LLM prompt + `pico2wave` voice). The pipeline itself is language-agnostic: everything you say to it lives in `commandes.json`.
 
 <p align="center">
-  <img src="assets/demo.gif" alt="Démonstration : PiDog obéit à la voix" width="420" /><br>
-  <sub><a href="assets/demo.mp4">▶ Voir la vidéo avec le son</a></sub>
+  <img src="assets/demo.gif" alt="Demo: PiDog obeys voice commands" width="420" /><br>
+  <sub><a href="assets/demo.mp4">▶ Watch the video with sound</a></sub>
 </p>
 
 ---
 
-## Comment ça marche
+## How it works
 
 <p align="center">
-  <img src="assets/architecture.svg" alt="Architecture de pidog-voice : robot embarqué et serveur d'IA" width="1000" />
+  <img src="assets/architecture.svg" alt="pidog-voice architecture: on-board robot and AI server" width="1000" />
 </p>
 
-Le robot capte et agit ; l'ordinateur transcrit et comprend. Entre les deux, **du JSON
-uniquement** : l'audio ne circule que dans le sens robot → Mac. La voix du chien est
-synthétisée sur le Pi (`pico2wave`), jamais transmise par le réseau.
+The robot listens and acts; the computer transcribes and understands. Between the two, **JSON
+only**: audio only travels robot → Mac. The dog's voice is
+synthesized on the Pi (`pico2wave`), never sent over the network.
 
-**~1,75 s** entre la fin de votre phrase et le premier mouvement.
+**~1.75 s** between the end of your sentence and the first movement.
 
-### Pourquoi le cerveau n'est pas sur le robot
+### Why the brain isn't on the robot
 
-C'est la question qu'on se pose en premier. Nous l'avons mesurée :
+That's the first question people ask. We measured it:
 
-| | transcription d'une phrase | charge | température |
+| | transcribing one sentence | load | temperature |
 |---|---|---|---|
-| Mac Mini M2 Pro | **0,34 s** | — | — |
-| Raspberry Pi 4 (`tiny`) | 2,9 s | **7,7** (4 cœurs) | **76 °C** |
-| Raspberry Pi 4 (`base`) | 5,4 s | — | — |
+| Mac Mini M2 Pro | **0.34 s** | — | — |
+| Raspberry Pi 4 (`tiny`) | 2.9 s | **7.7** (4 cores) | **76 °C** |
+| Raspberry Pi 4 (`base`) | 5.4 s | — | — |
 
-Sur le Pi, Whisper monopolise les 4 cœurs : la boucle d'écoute est affamée, le robot
-**cesse littéralement d'entendre**, et l'audio grésille. Le mode local existe quand même
-(`PIDOG_STT=local`) comme repli hors-ligne.
+On the Pi, Whisper hogs all 4 cores: the listening loop starves, the robot
+**literally stops hearing**, and the audio crackles. Local mode still exists
+(`PIDOG_STT=local`) as an offline fallback.
 
 ---
 
 ## Installation
 
-### Sur l'ordinateur (le cerveau)
+### On the computer (the brain)
 
 ```bash
 pip install faster-whisper
 ollama pull llama3.2                 # https://ollama.com
-python3 mac/stt_server.py            # écoute sur le port 8770
+python3 mac/stt_server.py            # listens on port 8770
 ```
 
-### Sur le Raspberry Pi (le robot)
+### On the Raspberry Pi (the robot)
 
-Prérequis : la librairie [SunFounder PiDog](https://github.com/sunfounder/pidog) installée.
+Requirement: the [SunFounder PiDog](https://github.com/sunfounder/pidog) library installed.
 
 ```bash
-scp -r commandes.json config.py pi/ demos/ outils/ pidog@<ip-du-robot>:~/pidog-voice/
-ssh pidog@<ip-du-robot>
-export PIDOG_MAC=http://<ip-de-votre-ordinateur>:8770
-~/pidog-voice/pi/ears_loop.sh        # écoute supervisée
+scp -r commandes.json config.py pi/ demos/ outils/ pidog@<robot-ip>:~/pidog-voice/
+ssh pidog@<robot-ip>
+export PIDOG_MAC=http://<your-computer-ip>:8770
+~/pidog-voice/pi/ears_loop.sh        # supervised listening
 ```
 
-### Démarrage automatique
+### Automatic start
 
 ```bash
-./install/mac_autostart.sh          # Mac : LaunchAgent (venv dédié créé au passage)
-PIDOG_MAC=http://192.168.1.26:8770 PIDOG_MARCHE=1 ./install/pi_autostart.sh   # Pi : cron @reboot
+./install/mac_autostart.sh          # Mac: LaunchAgent (a dedicated venv is created along the way)
+PIDOG_MAC=http://192.168.1.26:8770 PIDOG_MARCHE=1 ./install/pi_autostart.sh   # Pi: cron @reboot
 ```
 
-Les deux s'ajoutent `--retirer` pour désinstaller. Le Mac relance le serveur s'il meurt
-(`KeepAlive`), le Pi s'appuie sur `ears_loop.sh` qui supervise déjà l'écoute.
+Add `--retirer` to either one to uninstall. The Mac restarts the server if it dies
+(`KeepAlive`), the Pi relies on `ears_loop.sh`, which already supervises listening.
 
-> **macOS** : ne placez pas le projet dans `~/Documents`, `~/Bureau` ou `~/Téléchargements`.
-> La protection TCC interdit aux services lancés par `launchd` d'y accéder — le serveur
-> ne peut même pas lire son propre venv (`Operation not permitted`). `~/pidog-voice` convient.
+> **macOS**: don't put the project in `~/Documents`, `~/Desktop` or `~/Downloads`.
+> TCC protection forbids services started by `launchd` from accessing them — the server
+> can't even read its own venv (`Operation not permitted`). `~/pidog-voice` is fine.
 
-> **Raspberry Pi** : `cron` plutôt que systemd, pour n'exiger aucun privilège root.
-> L'option `--boot` attend que PipeWire et le réseau soient prêts avant de démarrer.
+> **Raspberry Pi**: `cron` rather than systemd, so no root privileges are needed.
+> The `--boot` option waits for PipeWire and the network to be ready before starting.
 
 ---
 
-## 🛑 Arrêt d'urgence
+## 🛑 Emergency stop
 
-**Posez la main sur la tête du chien : il s'arrête immédiatement.**
+**Put your hand on the dog's head: it stops immediately.**
 
-Le capteur tactile est le seul moyen d'arrêt fiable pendant un déplacement, et il est
-actif dès qu'une commande déplace le robot. La voix ne suffit pas :
+The touch sensor is the only reliable way to stop it while it's moving, and it is
+active as soon as a command moves the robot. Voice isn't enough:
 
-- elle passe par le réseau et par Whisper — **1,2 s dans le meilleur cas** ;
-- les servos en mouvement produisent un bruit **42× supérieur** au silence et couvrent
-  la parole (mesuré : 35 à l'arrêt, 1513 en mouvement) ;
-- Whisper peut partir en boucle sur du bruit — constaté, **39 s de transcription**
-  pendant lesquelles le robot est totalement sourd.
+- it goes through the network and Whisper — **1.2 s at best**;
+- moving servos make noise **42× louder** than silence and drown out
+  speech (measured: 35 at rest, 1513 while moving);
+- Whisper can loop on noise — observed, **39 s of transcription**
+  during which the robot is completely deaf.
 
-Le tactile, lui, est local, instantané, et ne dépend de rien.
+Touch, on the other hand, is local, instant, and depends on nothing.
 
 ---
 
-## Ajouter une commande
+## Adding a command
 
-Tout se passe dans **`commandes.json`**, et rien d'autre. Ce fichier alimente les trois
-étages à la fois : le vocabulaire de Whisper, le prompt du LLM, et les mouvements.
+Everything happens in **`commandes.json`**, and nowhere else. This file feeds all three
+stages at once: Whisper's vocabulary, the LLM prompt, and the movements.
 
 ```json
 "gratte": {
@@ -116,47 +120,47 @@ Tout se passe dans **`commandes.json`**, et rien d'autre. Ce fichier alimente le
 }
 ```
 
-C'est tout. Le chien comprend désormais *« tu as des puces »*.
+That's all. The dog now understands *« tu as des puces »* ("you've got fleas").
 
-| champ | rôle |
+| field | role |
 |---|---|
-| `intention` | décrit l'action au LLM — **c'est ce champ qui fait la précision** |
-| `phrases` | oriente Whisper vers les tournures attendues |
-| `exemples` | few-shot du LLM, pour les formulations indirectes |
-| `sequence` | les mouvements (voir les verbes ci-dessous) |
-| `deplace` | `true` = refusé tant que le robot est sur une table |
+| `intention` | describes the action to the LLM — **this field is what drives accuracy** |
+| `phrases` | steers Whisper towards the expected wording |
+| `exemples` | LLM few-shot examples, for indirect phrasings |
+| `sequence` | the movements (see the verbs below) |
+| `deplace` | `true` = refused while the robot is on a table |
 
-### Verbes de séquence
+### Sequence verbs
 
 ```json
-{"action": "sit", "speed": 70}                  do_action() de la lib pidog
+{"action": "sit", "speed": 70}                  do_action() from the pidog lib
 {"preset": "hand_shake"}                        pidog.preset_actions
-{"son": "single_bark_1"}                        un son de ~/pidog/sounds
-{"led": {"mode":"breath","color":"cyan"}}       bandeau RGB
-{"tete": [0, 0, -20], "speed": 80}              mouvement de tête
-{"pattes": [45,-25,-45,25,80,70,-80,-70]}       pose des pattes
-{"pause": 0.5}                                  attente
-{"dire": "texte"}                               synthèse vocale
-{"repeter": 3, "etapes": [...]}                 boucle
-{"builtin": "distance"}                         comportement Python
+{"son": "single_bark_1"}                        a sound from ~/pidog/sounds
+{"led": {"mode":"breath","color":"cyan"}}       RGB strip
+{"tete": [0, 0, -20], "speed": 80}              head movement
+{"pattes": [45,-25,-45,25,80,70,-80,-70]}       leg pose
+{"pause": 0.5}                                  wait
+{"dire": "texte"}                               speech synthesis
+{"repeter": 3, "etapes": [...]}                 loop
+{"builtin": "distance"}                         Python behaviour
 ```
 
-**Toujours valider avant de déployer :**
+**Always validate before deploying:**
 
 ```bash
 python3 outils/verifier_config.py --tokens
 ```
 
-> ⚠️ Whisper tronque son amorce de vocabulaire à **223 tokens en gardant la fin**.
-> Un fichier trop bavard fait donc disparaître les *premières* commandes — en silence,
-> sans erreur. C'est exactement ce que ce validateur attrape.
+> ⚠️ Whisper truncates its vocabulary prompt to **223 tokens, keeping the end**.
+> A file that's too wordy therefore makes the *first* commands disappear — silently,
+> with no error. That's exactly what this validator catches.
 
 ---
 
-## Les commandes livrées
+## The bundled commands
 
-Ce tableau est **généré depuis `commandes.json`** (`python3 outils/lister_commandes.py
---injecter`) : il ne peut donc pas mentir sur ce que le robot sait faire.
+This table is **generated from `commandes.json`** (`python3 outils/lister_commandes.py
+--injecter`), so it can't lie about what the robot can do. The commands are spoken in French.
 
 <!-- COMMANDES:debut -->
 | Commande | Ce qu'il fait | Dites par exemple |
@@ -181,14 +185,16 @@ Ce tableau est **généré depuis `commandes.json`** (`python3 outils/lister_com
 🔒 = déplace le robot : refusé tant que `PIDOG_MARCHE=1` n'est pas défini (il est probablement sur une table).
 <!-- COMMANDES:fin -->
 
-Le chien accepte bien plus de formulations que celles-ci : c'est le LLM qui interprète
-l'intention. *« montre-moi ce que tu sais faire »*, *« tu as des puces ? »* ou
-*« on ne t'entend pas »* fonctionnent sans être listés nulle part.
+(🔒 = moves the robot: refused until `PIDOG_MARCHE=1` is set — it's probably on a table.)
 
-### Renommer le robot
+The dog accepts far more phrasings than these: the LLM interprets the
+intent. *« montre-moi ce que tu sais faire »* (show me what you can do), *« tu as des puces ? »* or
+*« on ne t'entend pas »* (we can't hear you) work without being listed anywhere.
 
-Le nom traverse les trois étages (mot de réveil, amorce Whisper, prompt du LLM).
-Il tient dans un seul réglage :
+### Renaming the robot
+
+The name runs through all three stages (wake word, Whisper prompt, LLM prompt).
+It fits in a single setting:
 
 ```json
 "reglages": {
@@ -197,92 +203,89 @@ Il tient dans un seul réglage :
 }
 ```
 
-Les `phrases` des commandes utilisent le marqueur `{nom}`, substitué au chargement —
-rien d'autre à modifier. Pensez à **réécrire `variantes_reveil`** : ce sont les
-déformations que la reconnaissance vocale fait subir au nom, et celles de « PiDog »
-ne valent évidemment pas pour « Rex ». Le nom lui-même est ajouté automatiquement.
+The commands' `phrases` use the `{nom}` marker, substituted at load time —
+nothing else to change. Remember to **rewrite `variantes_reveil`**: these are the
+distortions speech recognition applies to the name, and the ones for "PiDog"
+obviously don't apply to "Rex". The name itself is added automatically.
 
-## 🚨 Sécurité : le robot est souvent sur une table
+## 🚨 Safety: the robot is often on a table
 
-Toute commande marquée `"deplace": true` est **refusée** — le chien répond qu'il ne peut
-pas, plutôt que de tomber de la table. Pour l'autoriser une fois au sol :
+Any command marked `"deplace": true` is **refused** — the dog answers that it can't,
+rather than falling off the table. To allow it once it's on the floor:
 
 ```bash
 PIDOG_MARCHE=1 ~/pidog-voice/pi/ears_loop.sh
 ```
 
-## Réglages
+## Settings
 
-| variable | défaut | rôle |
+| variable | default | role |
 |---|---|---|
-| `PIDOG_MAC` | `http://cerveau.local:8770` | adresse du cerveau |
-| `PIDOG_WHISPER` | `small` | `base` = 3× plus rapide, moins robuste |
-| `PIDOG_MARCHE` | `0` | `1` autorise les déplacements |
-| `PIDOG_VOLUME` | *(inchangé)* | volume PipeWire en % |
-| `PIDOG_STT` | `mac` | `local` = Whisper sur le Pi (lent) |
+| `PIDOG_MAC` | `http://cerveau.local:8770` | address of the brain |
+| `PIDOG_WHISPER` | `small` | `base` = 3× faster, less robust |
+| `PIDOG_MARCHE` | `0` | `1` allows moving around |
+| `PIDOG_VOLUME` | *(unchanged)* | PipeWire volume in % |
+| `PIDOG_STT` | `mac` | `local` = Whisper on the Pi (slow) |
 
 ---
 
-## Pièges rencontrés (pour vous les épargner)
+## Pitfalls we hit (so you don't have to)
 
-- **Le micro** : utilisez le device ALSA `plug:mic` ou `robothat`. `default` et `hw:`
-  sont **muets** — le gain softvol ne leur est pas appliqué.
-- **Le volume** : si le chien est inaudible, ce n'est probablement ni ALSA ni les fichiers
-  sons, mais **PipeWire**, qui démarre souvent à 40 % (−24 dB).
-  `pactl set-sink-volume @DEFAULT_SINK@ 100%`. Ne dépassez pas 100 % : ça grésille.
-  Au passage, `robot_hat.music_set_volume()` **ne fait rien** — elle appelle
-  `sudo amixer sset 'PCM'`, or ce contrôle n'existe pas sur cette carte.
-- **Le mot de réveil est indispensable** : sans lui, le LLM invente une action sur une
-  phrase de conversation ordinaire, avec une confiance de 0,8. Un seuil ne filtre rien.
-- **Whisper ne connaît pas « PiDog »** et le transcrit « qui doit » ou « le pideau ».
-  Le champ `phrases` corrige ça — mesuré : 0/5 → 5/5.
-- **La qualité vient du prompt, pas de la taille du modèle.** Décrire chaque action et
-  donner des exemples a fait passer llama3.2 de 75 % à 93 % — mieux qu'un modèle deux
-  fois plus gros avec un prompt pauvre, et deux fois plus rapide.
+- **The microphone**: use the ALSA device `plug:mic` or `robothat`. `default` and `hw:`
+  are **silent** — the softvol gain isn't applied to them.
+- **The volume**: if the dog can't be heard, it's probably neither ALSA nor the sound
+  files, but **PipeWire**, which often starts at 40% (−24 dB).
+  `pactl set-sink-volume @DEFAULT_SINK@ 100%`. Don't go above 100%: it crackles.
+  By the way, `robot_hat.music_set_volume()` **does nothing** — it calls
+  `sudo amixer sset 'PCM'`, and that control doesn't exist on this card.
+- **The wake word is essential**: without it, the LLM invents an action from an
+  ordinary sentence of conversation, with a confidence of 0.8. A threshold filters nothing.
+- **Whisper doesn't know "PiDog"** and transcribes it as "qui doit" or "le pideau".
+  The `phrases` field fixes that — measured: 0/5 → 5/5.
+- **Quality comes from the prompt, not the model size.** Describing each action and
+  giving examples took llama3.2 from 75% to 93% — better than a model twice
+  as big with a poor prompt, and twice as fast.
 
 ---
 
-## 🤝 Le matériel du projet
+## 🤝 Project hardware
 
-*Liens partenaires Amazon : si vous achetez via ces liens, le projet touche une petite
-commission, sans surcoût pour vous. Cela n'influence pas ce qui est écrit ici — c'est le
-matériel du projet : la carte qui tourne dans le chien, sa carte mémoire et le Mac qui fait
-tourner l'IA.*
+*Amazon affiliate links: if you buy through these links, the project earns a small commission at no extra cost to you.*
 
 <table>
 <tr>
 <td align="center" width="33%">
   <a href="https://www.amazon.com/dp/B07V5JTMV9?linkCode=ll2&amp;tag=koua29pvoice-20&amp;ref_=as_li_ss_tl"><img src="assets/amazon-B07V5JTMV9.jpg" width="200" alt="CanaKit Raspberry Pi 4 (4 GB)"></a><br>
-  <b><a href="https://www.amazon.com/dp/B07V5JTMV9?linkCode=ll2&amp;tag=koua29pvoice-20&amp;ref_=as_li_ss_tl">CanaKit Raspberry Pi 4 (4 GB)</a></b><br><sub>Kit avec la carte qui tourne dans le chien</sub>
+  <b><a href="https://www.amazon.com/dp/B07V5JTMV9?linkCode=ll2&amp;tag=koua29pvoice-20&amp;ref_=as_li_ss_tl">CanaKit Raspberry Pi 4 (4 GB)</a></b><br><sub>Kit with the board that runs inside the dog</sub>
 </td>
 <td align="center" width="33%">
   <a href="https://www.amazon.com/dp/B0B7NVMBPL?linkCode=ll2&amp;tag=koua29pvoice-20&amp;ref_=as_li_ss_tl"><img src="assets/amazon-B0B7NVMBPL.jpg" width="200" alt="SanDisk 64 GB microSD (2-pack)"></a><br>
-  <b><a href="https://www.amazon.com/dp/B0B7NVMBPL?linkCode=ll2&amp;tag=koua29pvoice-20&amp;ref_=as_li_ss_tl">SanDisk 64 GB microSD (2-pack)</a></b><br><sub>Raspberry Pi OS et les fichiers du projet</sub>
+  <b><a href="https://www.amazon.com/dp/B0B7NVMBPL?linkCode=ll2&amp;tag=koua29pvoice-20&amp;ref_=as_li_ss_tl">SanDisk 64 GB microSD (2-pack)</a></b><br><sub>Raspberry Pi OS and the project files</sub>
 </td>
 <td align="center" width="33%">
-  <a href="https://www.amazon.com/dp/B0FLD69KFF?linkCode=ll2&amp;tag=koua29pvoice-20&amp;ref_=as_li_ss_tl"><img src="assets/amazon-B0FLD69KFF.jpg" width="200" alt="Anker Soundcore 2 (enceinte Bluetooth)"></a><br>
-  <b><a href="https://www.amazon.com/dp/B0FLD69KFF?linkCode=ll2&amp;tag=koua29pvoice-20&amp;ref_=as_li_ss_tl">Anker Soundcore 2 (enceinte Bluetooth)</a></b><br><sub>La musique que le chien écoute, et ses réponses</sub>
+  <a href="https://www.amazon.com/dp/B0FLD69KFF?linkCode=ll2&amp;tag=koua29pvoice-20&amp;ref_=as_li_ss_tl"><img src="assets/amazon-B0FLD69KFF.jpg" width="200" alt="Anker Soundcore 2 (Bluetooth speaker)"></a><br>
+  <b><a href="https://www.amazon.com/dp/B0FLD69KFF?linkCode=ll2&amp;tag=koua29pvoice-20&amp;ref_=as_li_ss_tl">Anker Soundcore 2 (Bluetooth speaker)</a></b><br><sub>The music the dog listens to, and its replies</sub>
 </td>
 </tr>
 </table>
 
-<sub>En tant que Partenaire Amazon, je réalise un bénéfice sur les achats remplissant les conditions requises. · As an Amazon Associate I earn from qualifying purchases.</sub>
+<sub>As an Amazon Associate I earn from qualifying purchases.</sub>
 
-## ☕ Offrez-moi un café
+## ☕ Buy me a coffee
 
-Ce projet est gratuit et open source. S'il vous est utile, vous pouvez me remercier
-en m'offrant un café — il suffit de scanner ce QR code PayPal. Merci beaucoup ! 🙏
+This project is free and open source. If you find it useful, you can say thanks
+by buying me a coffee — just scan this PayPal QR code. Thanks a lot! 🙏
 
 <p align="center">
-  <img src="docs/paypal-qr.png" alt="QR code PayPal pour offrir un café" width="220" />
+  <img src="docs/paypal-qr.png" alt="PayPal QR code to buy me a coffee" width="220" />
 </p>
 
 ---
 
-## Licence
+## License
 
 [MIT](LICENSE) © 2026 koua29
 
-Construit avec [Claude Code](https://claude.com/claude-code).
-Repose sur [SunFounder PiDog](https://github.com/sunfounder/pidog),
-[faster-whisper](https://github.com/SYSTRAN/faster-whisper) et [Ollama](https://ollama.com).
+Built with [Claude Code](https://claude.com/claude-code).
+Relies on [SunFounder PiDog](https://github.com/sunfounder/pidog),
+[faster-whisper](https://github.com/SYSTRAN/faster-whisper) and [Ollama](https://ollama.com).
